@@ -6,11 +6,11 @@ const cors = require('cors');
 
 app.use(bodyParser.json());
 app.use(cors());
+//app.use(express.static('build'));
 
 morgan.token('data', function(req, res) {
     return (JSON.stringify(req.body))
 })
-
 app.use(morgan(':method :url :data'));
 
 let persons = [
@@ -37,12 +37,12 @@ let persons = [
 ]
 
 //get all
-app.get('/persons', (request, response) => {    
+app.get('/api/persons', (request, response) => {    
     response.json(persons);    
 })
 
 //info
-app.get('/info', (request, response) => {
+app.get('/api/info', (request, response) => {
     let amount = persons.length;
     let time = new Date().toTimeString()
     let msg = `Phonebook has ${amount} contacts <br/> ${time}`
@@ -50,12 +50,12 @@ app.get('/info', (request, response) => {
 })
 
 //default
-app.get('/', (request, response) => {
+app.get('/api/', (request, response) => {
     response.send('<p>Hello!</p>')
 })
 
 //get person
-app.get('/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response) => {
     const id = request.params.id;
     const person = persons.find(person => person.id === Number(id))
 
@@ -67,15 +67,17 @@ app.get('/persons/:id', (request, response) => {
 })
 
 //delete person
-app.delete('/person/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response) => {
     const id = request.params.id;
+    console.log('id'+id);
+    
     persons = persons.filter(person => person.id !== Number(id))
 
     response.status(204)
 })
 
 //add person
-app.post('/persons', (request, response) => {    
+app.post('/api/persons', (request, response) => {    
     const body = request.body;
 
     const getId = () => {
