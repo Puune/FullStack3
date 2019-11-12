@@ -19,23 +19,19 @@ const Person = require('./models/person');
 let persons = [
     {
       "name": "Arto Hellas",
-      "number": "050 7642552",
-      "id": 1
+      "number": "050 7642552"
     },
     {
       "name": "Ada Lovelace",
-      "number": "0123456789",
-      "id": 2
+      "number": "0123456789"
     },
     {
       "name": "Dan Abramov",
-      "number": "694201337",
-      "id": 3
+      "number": "694201337"
     },
     {
       "name": "Mary Poppendieck",
-      "number": "444222222",
-      "id": 4
+      "number": "444222222"
     }
 ]
 
@@ -59,12 +55,10 @@ app.get('/', (request, response) => {
     response.send('<p>Hello!</p>')
 })
 
-//get person //update person
+//get person
 app.get('/api/persons/:id', (request, response) => {
     Person.findById(request.params.id).then(person => {
         if(person) {
-            const body = request.body;
-            Person.findByIdAndUpdate(request.params.id, {"name": `${body.name}`, "number": `${body.number}`});
             response.json(person.toJSON());
         } else {
             response.status(404).end();
@@ -74,6 +68,27 @@ app.get('/api/persons/:id', (request, response) => {
         console.log(error);
         response.status(400).send({error: 'bad id'});    
     })
+})
+
+//update person
+app.put('/api/persons/:id', (request, response) => {
+    const body = request.body;
+    const person = {
+        name: body.name,
+        number: body.number
+    }
+
+    console.log(body);
+    
+
+    Person.findByIdAndUpdate(request.params.id, person, {new: true})
+        .then(updatedPerson => {            
+            response.json(updatedPerson.toJSON());
+        })
+        .catch(error => {
+            console.log(error);
+            response.status(400).send({error: 'bad id'});
+        })
 })
 
 //delete person
