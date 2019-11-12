@@ -59,12 +59,12 @@ app.get('/', (request, response) => {
     response.send('<p>Hello!</p>')
 })
 
-//get person
-app.get('/api/person/:id', (request, response) => {
+//get person //update person
+app.get('/api/persons/:id', (request, response) => {
     Person.findById(request.params.id).then(person => {
-        console.log(request.params.id);
-        
         if(person) {
+            const body = request.body;
+            Person.findByIdAndUpdate(request.params.id, {"name": `${body.name}`, "number": `${body.number}`});
             response.json(person.toJSON());
         } else {
             response.status(404).end();
@@ -79,10 +79,13 @@ app.get('/api/person/:id', (request, response) => {
 //delete person
 app.delete('/api/persons/:id', (request, response) => {
     const id = request.params.id;
-    console.log('id'+id);
-    
-    persons = Person.find(id).delete();
-    response.status(204);
+    Person.findByIdAndDelete(id)
+        .then(result => {
+            response.status(204).end();
+        })
+        .catch(error => {
+            response.status(400).send({error: 'bad id'});
+        })
 })
 
 //add person
