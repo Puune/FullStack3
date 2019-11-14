@@ -12,7 +12,8 @@
     "deploy:full": "npm run build:ui && git  add . && git commit -m uibuild && npm run deploy",
     "logs:prod": "heroku logs --tail",
     "heroku:stop": "heroku ps:scale web=0",
-    "heroku:continue": "heroku ps:scale web=1"
+    "heroku:continue": "heroku ps:scale web=1",
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
@@ -25,6 +26,8 @@
   },
   "homepage": "https://github.com/Puune/FullStack3#readme",
   "devDependencies": {
+    "eslint": "^6.6.0",
+    "eslint-plugin-react": "^7.16.0",
     "nodemon": "^1.19.4"
   },
   "dependencies": {
