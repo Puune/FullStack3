@@ -16,24 +16,6 @@ app.use(morgan(':method :url :data'));
 
 const Person = require('./models/person');
 
-let persons = [
-    {
-      "name": "Arto Hellas",
-      "number": "050 7642552"
-    },
-    {
-      "name": "Ada Lovelace",
-      "number": "0123456789"
-    },
-    {
-      "name": "Dan Abramov",
-      "number": "694201337"
-    },
-    {
-      "name": "Mary Poppendieck",
-      "number": "444222222"
-    }
-]
 
 //get all
 app.get('/api/persons', (request, response) => {    
@@ -56,7 +38,7 @@ app.get('/', (request, response) => {
 })
 
 //get person
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
     Person.findById(request.params.id).then(person => {
         if(person) {
             response.json(person.toJSON());
@@ -64,51 +46,40 @@ app.get('/api/persons/:id', (request, response) => {
             response.status(404).end();
         }
     })
-    .catch(error => {
-        console.log(error);
-        response.status(400).send({error: 'bad id'});    
-    })
+    .catch(error => next(error))
 })
 
 //update person
-app.put('/api/persons/:id', (request, response) => {
+app.put('/api/persons/:id', (request, response, next) => {
     const body = request.body;
     const person = {
         name: body.name,
         number: body.number
     }
-
     console.log(body);
-    
-
     Person.findByIdAndUpdate(request.params.id, person, {new: true})
         .then(updatedPerson => {            
             response.json(updatedPerson.toJSON());
         })
-        .catch(error => {
-            console.log(error);
-            response.status(400).send({error: 'bad id'});
-        })
+        .catch(error => next(error));
 })
 
 //delete person
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
     const id = request.params.id;
     Person.findByIdAndDelete(id)
         .then(result => {
             response.status(204).end();
         })
-        .catch(error => {
-            response.status(400).send({error: 'bad id'});
-        })
+        .catch(error => next(error));
 })
 
 //add person
-app.post('/api/persons', (request, response) => {    
+app.post('/api/persons', (request, response, next) => {    
     const body = request.body;
     
 
-    if(body.name==="" || body.number===""){
+    if(body.name===undefined || body.number===undefined){
         console.log('post cancelled');
         
         response.status(400).json({
@@ -123,10 +94,46 @@ app.post('/api/persons', (request, response) => {
         person.save().then(addedPerson => {
             response.json(addedPerson.toJSON());
         })
+        .catch(error => next(error));
     }
 })
+
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message);
+
+    if(error.name === 'CastError' && error.kind === 'ObjectId'){
+        return response.status(400).send({error: "Malform id"})
+    } else if(error.name === 'ValidationError') {
+        return response.status(400).json({error: error.message})
+    }
+
+    next(error);
+}
+app.use(errorHandler);
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
+
+
+/*
+let persons = [
+    {
+      "name": "Arto Hellas",
+      "number": "050 7642552"
+    },
+    {
+      "name": "Ada Lovelace",
+      "number": "0123456789"
+    },
+    {
+      "name": "Dan Abramov",
+      "number": "694201337"
+    },
+    {
+      "name": "Mary Poppendieck",
+      "number": "444222222"
+    }
+]
+*/
